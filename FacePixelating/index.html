@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Pixelator</title>
+    <script src="../js/pixelate.js"></script>
+
+    <style>
+        canvas{
+            border: 5px black double;
+            border-radius: 16px;
+        }
+
+        #inputs{
+            margin-top: 16px;
+        }
+
+        .row{
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="700" height="850"></canvas>
+
+    <div id="inputs">
+        <div class="row"><label>Size <input id="size" type="number" value="20" min="5" max="300"/></label></div>
+        <div class="row"><label><input id="pixelate" type="checkbox"/> Pixelate</label></div>
+    </div>
+</body>
+</html>
