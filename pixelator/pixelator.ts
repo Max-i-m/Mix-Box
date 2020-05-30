@@ -36,8 +36,10 @@ class Pixelate{
         if(this.pixelate){
             let tileWidth = this.startSize;
             let tileHeight = this.startSize;
+            // Go through the tiles
             for(let y = this.top; y < this.top + this.height; y += tileHeight){
                 for(let x = this.left; x < this.left + this.width; x += tileWidth){
+                    // Make sure the tile isn't out of bounds
                     tileWidth = this.startSize;
                     tileHeight = this.startSize;
                     if(x + tileWidth > this.left + this.width){
@@ -46,18 +48,19 @@ class Pixelate{
                     if(y + tileHeight > this.top + this.height){
                         tileHeight = tileHeight - (y + tileHeight - this.top - this.height);
                     }
-                    this.drawAverage(x, y, tileWidth, tileHeight);
+                    this.drawTile(x, y, tileWidth, tileHeight);
                 }
             }
         }
     }
 
-    private drawAverage(left: number, top: number, tileWidth: number, tileHeight: number): void{
+    private drawTile(left: number, top: number, tileWidth: number, tileHeight: number): void{
         let averageR = 0;
         let averageG = 0;
         let averageB = 0;
         let data = this.ctx.getImageData(left, top, tileWidth, tileHeight).data;
 
+        // Calculate the average color of the tile
         for(let i = 0; i < data.length; i += 4){
             averageR += data[i];
             averageG += data[i + 1];
@@ -69,6 +72,7 @@ class Pixelate{
         averageG /= pixelCount;
         averageB /= pixelCount;
 
+        // Draw the tile
         this.ctx.fillStyle = `rgb(${Math.round(averageR)}, ${Math.round(averageG)}, ${Math.round(averageB)})`;
         this.ctx.fillRect(left, top, tileWidth, tileHeight);
     }

@@ -13,20 +13,20 @@
         }
 
         #inputs{
-            margin-top: 16px;
+            margin: 16px 0;
         }
 
-        .row{
-            margin-bottom: 16px;
+        #pixelateLabel{
+            margin-right: 16px;
         }
     </style>
 </head>
 <body>
-    <canvas id="canvas" width="700" height="850"></canvas>
-
     <div id="inputs">
-        <div class="row"><label>Size <input id="size" type="number" value="20" min="5" max="300"/></label></div>
-        <div class="row"><label><input id="pixelate" type="checkbox"/> Pixelate</label></div>
+        <label id="pixelateLabel"><input id="pixelate" type="checkbox"/> Pixelate</label>
+        <label>Tile Size <input id="size" type="number" value="20" min="5" max="500"/></label>
     </div>
+    
+    <canvas id="canvas" width="700" height="850"></canvas>
 </body>
 </html>
