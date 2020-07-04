@@ -1,6 +1,9 @@
 # Mix-Box
 Many projects mixed up in one repository.
 
+- Fireworks
+    Live Demo: https://max.octo.net/mix/fireworks/
+
 - Pixelator
     Pixelates a part of a photo.
     Live Demo: https://max.octo.net/mix/pixelator/
