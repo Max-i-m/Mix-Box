@@ -1,114 +1,195 @@
 class Fireworks{
     private fireworks: Firework[] = [];
     private ctx: CanvasRenderingContext2D;
+    private sound: HTMLAudioElement;
 
     constructor(){
         this.ctx = (<HTMLCanvasElement>document.getElementById("canvas")).getContext("2d")!;
-        
-        let count = 0;
-        let mainDraw = () => {
-            this.draw();
-            count++;
-            if(count === 25){
-                this.add(new Firework(Math.random() * 1000, 
-                    0, 
-                    Math.PI/2 + (Math.random() - 0.5) * Math.PI/8, 
-                    10, 
-                    `${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}`));
-
-                count = 0;
-            }
-            requestAnimationFrame(mainDraw);
-        };
     
+        let showFlag = false;
+        this.sound = new Audio("anthem.mp3");
+        // Chrome plays sounds only after user interaction
+        document.addEventListener("click", () => {
+            this.sound.play();
+            showFlag = true;
+        });
+
+        let tick = 0;
+        // Opacity style is a string, so I use variable to increment it
+        let flagOpacity = 0;
+        let mainDraw = (): void => {
+            if(showFlag && flagOpacity <= 0.025){
+                document.getElementById("flag")!.style.opacity = flagOpacity.toString();
+                flagOpacity += 0.0001;
+            }
+            
+            tick++;
+
+            // Adding a firework every half of a second
+            if(tick == 30){
+                this.add(new Firework(Math.random()*this.ctx.canvas.width, 
+                    0, 
+                    (Math.random() * 30) + 75, 
+                    (Math.random() * 3) + 9, 
+                    55 + Math.random() * 200, 
+                    55 + Math.random() * 200, 
+                    55 + Math.random() * 200, 
+                    4, 
+                    true));
+                tick = 0;
+            }
+
+            this.draw();
+
+            // Remove dead fireworks
+            for(let i = this.fireworks.length - 1; i >= 0; i--){                
+                if(this.fireworks[i].delete){
+                    this.fireworks.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(mainDraw);
+        }
+
         mainDraw();
     }
 
+    private draw(): void{        
+        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        
+        this.ctx.save();
+        {
+            // Moves the origin to the left-bottom corner
+            this.ctx.transform(1, 0, 0, -1, 0, this.ctx.canvas.height);
+
+            for(let firework of this.fireworks){
+                firework.draw(this.ctx, this);
+            }
+        }
+        this.ctx.restore();
+    }
+    
     public add(firework: Firework): void{
         this.fireworks.push(firework);
-    }
-
-    private draw(): void{
-        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-        for(let firework of this.fireworks){
-            firework.draw(this.ctx);
-        
-            if(firework.blowUpY !== 0){
-                for(let i = 0; i < 20; i++){
-                    this.add(new Firework(firework.blowUpX, firework.blowUpY, Math.random() * 2 * Math.PI, 5, firework.rgb));
-                }
-            }
-        }
-
-        for(let i = this.fireworks.length - 1; i >= 0; i--){
-            if(this.fireworks[i].destroy){
-                this.fireworks.splice(i, 1);
-            }
-        }
     }
 }
 
 class Firework{
-    private static readonly GravityAcceleration: number = 0.1;
+    private static readonly gravity: number = 0.1;
 
     private x: number;
-    private y: number = 0;
+    private y: number;
     private xSpeed: number;
     private ySpeed: number;
-    private count: number = 0;
-    public rgb: string;
-    public blowUpX: number = 0;
-    public blowUpY: number = 0;
+    private size: number;
+    private r: number;
+    private g: number;
+    private b: number;
+    private counter: number = 0;
+    private canBlowUp: boolean;
+    private sound: HTMLAudioElement;
+    public delete: boolean = false;
 
-    constructor(x: number, y: number, angle: number, speed: number, rgb: string){    
+    constructor(x: number, y: number, angle: number, speed: number, r: number, g: number, b: number, size: number, canBlowUp: boolean){
         this.x = x;
         this.y = y;
-        this.xSpeed = Math.cos(angle) * speed;
-        this.ySpeed = Math.sin(angle) * speed;
-        this.rgb = rgb;
+        let angleRadians = Math.PI * angle / 180;
+        this.xSpeed = Math.cos(angleRadians) * speed;
+        this.ySpeed = Math.sin(angleRadians) * speed;
+        this.r = Math.floor(r);
+        this.g = Math.floor(g);
+        this.b = Math.floor(b);
+        this.size = size;
+        this.sound = new Audio();
+        this.sound.src = "bang.wav";
+        this.canBlowUp = canBlowUp;
     }
 
-    public get destroy(): boolean{
-        if(this.blowUpY !== 0){
-            return true;
+    public blowUp(fireworks: Fireworks, x: number, y: number): void{
+        this.delete = true;
+        this.sound.play();
+        
+        let angle = 0;
+        let shots = 60;
+        
+        let rareR = Math.random() * 255;
+        let rareG = Math.random() * 255;
+        let rareB = Math.random() * 255;
+
+        // Makes the firework explode into multiple flares
+        for(let i = 0; i < shots; i++){
+            let r: number;
+            let g: number;
+            let b: number;
+
+            // Make every sixth flare a completly different color
+            if(i % 6 === 0){
+                r = rareR;
+                g = rareG;
+                b = rareB;
+            }
+            else{
+                r = Math.max(0, Math.min(255, this.r + (Math.random() - 0.5) * 50));
+                g = Math.max(0, Math.min(255, this.g + (Math.random() - 0.5) * 50));
+                b = Math.max(0, Math.min(255, this.b + (Math.random() - 0.5) * 50));
+            }
+            fireworks.add(new Firework(x, y, 
+                angle, 5, r, g, b, 2, false));
+                
+            angle += 360 / shots;
         }
-        if(this.count >= 35 && this.y !== 0){
-            return true;
-        }
-        return false;
     }
 
-    public draw(ctx: CanvasRenderingContext2D): void{
-        ctx.save();
-        {
-            let cX = this.x;
-            let cY = this.y;
-            let cYSpeed = this.ySpeed;
-            let a = 0;
-            ctx.transform(1, 0, 0, -1, 0, ctx.canvas.height);
-
-            this.count++;
-
-            let points = 50;
-
-            for(let i = 0; i < this.count; i++){
-                if(i >= this.count - points){
-                    ctx.fillStyle = `rgba(${this.rgb}, ${a})`;
-                    ctx.fillRect(cX, cY, 3, 3);
-                    a += 1 / points;
+    public draw(ctx: CanvasRenderingContext2D, fireworks: Fireworks): void{        
+        this.counter++;
+            
+        let tailSize = 30;
+        if(!this.canBlowUp){
+            tailSize = 15;
+        }
+        let cx = this.x;
+        let cy = this.y;
+        let cySpeed = this.ySpeed;
+        let a = 0;
+        for(let i = 0; i < this.counter; i++){
+            // Only draw the tailSize of squares
+            if(i > this.counter - tailSize){
+                // Draw the light effect around the last square
+                if(i === this.counter - 1){
+                    ctx.beginPath();
+                    {
+                        ctx.fillStyle = `rgba(${this.r}, ${this.g}, ${this.b}, 0.35)`;
+                        ctx.arc(cx + this.size / 2, cy + this.size / 2, this.size * 1.5, 0, 2 * Math.PI);
+                    }
+                    ctx.fill();
+                    ctx.beginPath();
+                    {
+                        ctx.fillStyle = `rgba(${this.r}, ${this.g}, ${this.b}, 0.2)`;
+                        ctx.arc(cx + this.size / 2, cy + this.size / 2, this.size * 2.5, 0, 2 * Math.PI);
+                    }
+                    ctx.fill();
                 }
-
-                cX += this.xSpeed;
-                cY += cYSpeed;
-                cYSpeed -= Firework.GravityAcceleration;
+                ctx.fillStyle = `rgba(${this.r}, ${this.g}, ${this.b}, ${a})`;
+                ctx.fillRect(cx, cy, this.size, this.size);
+                // Add to the opacity of each square
+                a += 1 / tailSize;
             }
+            cx += this.xSpeed;
+            cy += cySpeed;
+            cySpeed -= Firework.gravity;
+        }
 
-            if(cYSpeed <= 0 && this.y === 0){
-                this.blowUpX = cX;
-                this.blowUpY = cY;
+        if(this.canBlowUp){
+            if(cySpeed <= 0){
+                this.blowUp(fireworks, cx, cy);
             }
         }
-        ctx.restore();
+        else{
+            // Destroys the flare in fifty ticks
+            if(this.counter == 50){
+                this.delete = true;
+            }
+        }
     }
 }
 

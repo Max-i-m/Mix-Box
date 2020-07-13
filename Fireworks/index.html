@@ -7,13 +7,24 @@
     <title>July 4th Fireworks</title>
     
     <style>
-        #canvas{
-            border: 2px solid darkgray;
-            border-radius: 7px;
+        body{
+            margin: 0;
+            overflow: hidden;
+            background-color: rgb(25, 25, 30);
+            user-select: none;
+        }
+        #canvas, #flag{
+            height: 100vh;
+            width: 100vw;
+            position: absolute;
+        }
+        #flag{
+            opacity: 0;
         }
     </style>
 </head>
 <body>
-    <canvas id="canvas" width="1000" height="800"></canvas>
+    <img id="flag" src="flag.png"/>
+    <canvas id="canvas" width="1600" height="900"></canvas>
 </body>
 </html>
