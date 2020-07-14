@@ -76,9 +76,6 @@ var Firework = /** @class */ (function () {
         this.sound.play();
         var angle = 0;
         var shots = 60;
-        var rareR = Math.random() * 255;
-        var rareG = Math.random() * 255;
-        var rareB = Math.random() * 255;
         // Makes the firework explode into multiple flares
         for (var i = 0; i < shots; i++) {
             var r = void 0;
@@ -86,9 +83,9 @@ var Firework = /** @class */ (function () {
             var b = void 0;
             // Make every sixth flare a completly different color
             if (i % 6 === 0) {
-                r = rareR;
-                g = rareG;
-                b = rareB;
+                r = this.b;
+                g = this.r;
+                b = this.g;
             }
             else {
                 r = Math.max(0, Math.min(255, this.r + (Math.random() - 0.5) * 50));

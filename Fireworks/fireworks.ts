@@ -111,10 +111,6 @@ class Firework{
         
         let angle = 0;
         let shots = 60;
-        
-        let rareR = Math.random() * 255;
-        let rareG = Math.random() * 255;
-        let rareB = Math.random() * 255;
 
         // Makes the firework explode into multiple flares
         for(let i = 0; i < shots; i++){
@@ -124,9 +120,9 @@ class Firework{
 
             // Make every sixth flare a completly different color
             if(i % 6 === 0){
-                r = rareR;
-                g = rareG;
-                b = rareB;
+                r = this.b;
+                g = this.r;
+                b = this.g;
             }
             else{
                 r = Math.max(0, Math.min(255, this.r + (Math.random() - 0.5) * 50));
